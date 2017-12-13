@@ -1,0 +1,21 @@
+sudo: required
+dist: xenial
+os: linux
+language: minimal
+env:
+  global:
+    - MAKEJOBS=-j3
+  matrix:
+    - GOAL=release-static
+
+install:
+    - travis_retry travis/install_deps.sh
+
+script:
+    - export TRAVIS_COMMIT_LOG=`git log --format=fuller -1`
+    - make $MAKEJOBS $GOAL HOST=$HOST || ( echo "Build failure. Verbose build follows." && make $GOAL $HOST V=1 ; false )
+    - travis_wait 30 make $MAKEJOBS release-test
+
+after_script:
+    - echo $TRAVIS_COMMIT_RANGE
+    - echo $TRAVIS_COMMIT_LOG
